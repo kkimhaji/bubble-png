@@ -1,13 +1,52 @@
 <!doctype html>
-<html lang="en">
+<html lang="ko">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>bubble-png</title>
+    <title>말풍선 메이커</title>
   </head>
   <body>
-    <div id="app"></div>
+    <div id="app">
+      <div class="panel">
+        <label>
+          문구
+          <textarea id="text-input" rows="3" placeholder="문구를 입력하세요"></textarea>
+        </label>
+
+        <label>
+          말풍선 모양
+          <select id="bubble-select"></select>
+        </label>
+
+        <label>
+          폰트 크기
+          <input id="font-size" type="range" min="10" max="120" value="24" />
+        </label>
+
+        <label>
+          글자 색상
+          <input id="text-color" type="color" value="#000000" />
+        </label>
+
+        <label>
+          자간
+          <input id="letter-spacing" type="range" min="-5" max="20" value="0" />
+        </label>
+
+        <label><input id="bold" type="checkbox" /> 볼드</label>
+        <label><input id="italic" type="checkbox" /> 이탤릭</label>
+
+        <div class="button-row">
+          <button id="flip-h" type="button">좌우 반전</button>
+          <button id="flip-v" type="button">상하 반전</button>
+        </div>
+
+        <button id="export-btn" type="button" class="export-btn">PNG로 저장</button>
+      </div>
+
+      <div id="stage-container"></div>
+    </div>
+
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
