@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ko">
   <head>
     <meta charset="UTF-8" />
@@ -10,13 +10,31 @@
       <div class="panel">
         <label>
           문구
-          <textarea id="text-input" rows="3" placeholder="문구를 입력하세요"></textarea>
+          <textarea
+            id="text-input"
+            rows="3"
+            placeholder="문구를 입력하세요"
+          ></textarea>
         </label>
 
         <label>
           말풍선 모양
           <select id="bubble-select"></select>
         </label>
+        <label>
+          말풍선 너비(px)
+          <input id="bubble-width" type="number" min="20" />
+        </label>
+
+        <label>
+          말풍선 높이(px)
+          <input id="bubble-height" type="number" min="20" />
+        </label>
+
+        <label
+          ><input id="lock-aspect" type="checkbox" checked /> 가로세로 비율
+          고정</label
+        >
 
         <label>
           폰트 크기
@@ -41,7 +59,9 @@
           <button id="flip-v" type="button">상하 반전</button>
         </div>
 
-        <button id="export-btn" type="button" class="export-btn">PNG로 저장</button>
+        <button id="export-btn" type="button" class="export-btn">
+          PNG로 저장
+        </button>
       </div>
 
       <div id="stage-container"></div>

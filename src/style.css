@@ -32,7 +32,8 @@ body {
 
 /* 체크무늬 배경: 최종 export가 투명 PNG이므로, 편집 중에도 어디가 투명한지 눈으로 확인할 수 있게 처리 */
 #stage-container {
-  background: repeating-conic-gradient(#e0e0e0 0% 25%, #ffffff 0% 50%) 50% / 20px 20px;
+  background: repeating-conic-gradient(#e0e0e0 0% 25%, #ffffff 0% 50%) 50% /
+    20px 20px;
   border: 1px solid #ccc;
 }
 
