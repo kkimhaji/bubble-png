@@ -16,8 +16,13 @@ export const bubbles: BubbleAsset[] = [
   {
     id: 'round',
     label: '둥근 말풍선',
-    imageSrc: '/bubbles/round.svg',
+    imageSrc: 'bubbles/round.svg',
     safeArea: { x: 100, y: 60, width: 360, height: 200 },
   },
-  // 말풍선을 추가하려면: public/bubbles/에 svg 파일을 넣고 이 배열에 객체를 하나 더 추가하세요.
+  {
+    id: 'thinking',
+    label: '생각 말풍선',
+    imageSrc: 'bubbles/thinking.svg',
+    safeArea: { x: 44, y: 88, width: 281, height: 190 },
+  },
 ];
