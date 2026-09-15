@@ -1,6 +1,7 @@
 import Konva from "konva";
 import { bubbles, type BubbleAsset } from "./bubbles";
 import "./style.css";
+import { fonts } from './fonts';
 
 const SHOW_SAFE_AREA_DEBUG = false;
 const STAGE_WIDTH = 500;
@@ -8,11 +9,12 @@ const STAGE_HEIGHT = 500;
 
 const bubbleSelect =
   document.querySelector<HTMLSelectElement>("#bubble-select")!;
+const fontSelect = document.querySelector<HTMLSelectElement>('#font-select')!;
 const textInput = document.querySelector<HTMLTextAreaElement>("#text-input")!;
 const fontSizeInput = document.querySelector<HTMLInputElement>("#font-size")!;
 const colorInput = document.querySelector<HTMLInputElement>("#text-color")!;
-const letterSpacingInput =
-  document.querySelector<HTMLInputElement>("#letter-spacing")!;
+// const letterSpacingInput =
+//   document.querySelector<HTMLInputElement>("#letter-spacing")!;
 const boldCheckbox = document.querySelector<HTMLInputElement>("#bold")!;
 const italicCheckbox = document.querySelector<HTMLInputElement>("#italic")!;
 const flipHButton = document.querySelector<HTMLButtonElement>("#flip-h")!;
@@ -45,12 +47,20 @@ let textNode: Konva.Text | null = null;
 let debugRect: Konva.Rect | null = null;
 let flipX = false;
 let flipY = false;
+let currentFontFamily = fonts[0].cssFontFamily;
 
 bubbles.forEach((b) => {
   const option = document.createElement("option");
   option.value = b.id;
   option.textContent = b.label;
   bubbleSelect.appendChild(option);
+});
+
+fonts.forEach((f) => {
+  const option = document.createElement('option');
+  option.value = f.id;
+  option.textContent = f.label;
+  fontSelect.appendChild(option);
 });
 
 function resolvePublicPath(relativePath: string): string {
@@ -170,12 +180,29 @@ function updateTextPosition() {
   textNode.moveToTop();
 }
 
+fontSelect.addEventListener('change', async () => {
+  const selected = fonts.find((f) => f.id === fontSelect.value);
+  if (!selected) return;
+  currentFontFamily = selected.cssFontFamily;
+
+  // 폰트 파일이 아직 로드되지 않았다면 기다렸다가 반영 (안 그러면 폴백 폰트로 잠깐 보일 수 있음)
+  try {
+    await document.fonts.load(`16px "${currentFontFamily}"`);
+  } catch (err) {
+    console.error('폰트 로드 실패:', err);
+  }
+
+  updateTextStyle();
+});
+
 function updateTextStyle() {
   if (!textNode) return;
   textNode.text(textInput.value);
   textNode.fontSize(Number(fontSizeInput.value));
   textNode.fill(colorInput.value);
-  textNode.letterSpacing(Number(letterSpacingInput.value));
+  // textNode.letterSpacing(Number(letterSpacingInput.value));
+  textNode.fontFamily(currentFontFamily);
+
   const fontStyle =
     [boldCheckbox.checked ? "bold" : "", italicCheckbox.checked ? "italic" : ""]
       .filter(Boolean)
@@ -194,7 +221,7 @@ bubbleSelect.addEventListener("change", () => {
   textInput,
   fontSizeInput,
   colorInput,
-  letterSpacingInput,
+  // letterSpacingInput,
   boldCheckbox,
   italicCheckbox,
 ].forEach((el) => el.addEventListener("input", updateTextStyle));
