@@ -1,7 +1,7 @@
 import Konva from "konva";
 import { bubbles, type BubbleAsset } from "./bubbles";
 import "./style.css";
-import { fonts } from './fonts';
+import { fonts } from "./fonts";
 
 const SHOW_SAFE_AREA_DEBUG = false;
 const STAGE_WIDTH = 500;
@@ -9,24 +9,20 @@ const STAGE_HEIGHT = 500;
 
 const bubbleSelect =
   document.querySelector<HTMLSelectElement>("#bubble-select")!;
-const fontSelect = document.querySelector<HTMLSelectElement>('#font-select')!;
+const fontSelect = document.querySelector<HTMLSelectElement>("#font-select")!;
 const textInput = document.querySelector<HTMLTextAreaElement>("#text-input")!;
 const fontSizeInput = document.querySelector<HTMLInputElement>("#font-size")!;
 const colorInput = document.querySelector<HTMLInputElement>("#text-color")!;
-// const letterSpacingInput =
-//   document.querySelector<HTMLInputElement>("#letter-spacing")!;
-const boldCheckbox = document.querySelector<HTMLInputElement>("#bold")!;
-const italicCheckbox = document.querySelector<HTMLInputElement>("#italic")!;
 const flipHButton = document.querySelector<HTMLButtonElement>("#flip-h")!;
 const flipVButton = document.querySelector<HTMLButtonElement>("#flip-v")!;
 const exportButton = document.querySelector<HTMLButtonElement>("#export-btn")!;
 
-const bubbleWidthInput =
-  document.querySelector<HTMLInputElement>("#bubble-width")!;
-const bubbleHeightInput =
-  document.querySelector<HTMLInputElement>("#bubble-height")!;
-const lockAspectCheckbox =
-  document.querySelector<HTMLInputElement>("#lock-aspect")!;
+const bubbleWidthInput = document.querySelector<HTMLInputElement>("#bubble-width")!;
+const bubbleHeightInput = document.querySelector<HTMLInputElement>("#bubble-height")!;
+const lockAspectCheckbox = document.querySelector<HTMLInputElement>("#lock-aspect")!;
+
+const bubbleWidthRangeInput = document.querySelector<HTMLInputElement>("#bubble-width-range")!;
+const bubbleHeightRangeInput = document.querySelector<HTMLInputElement>("#bubble-height-range")!;
 
 const stage = new Konva.Stage({
   container: "stage-container",
@@ -59,7 +55,7 @@ bubbles.forEach((b) => {
 });
 
 fonts.forEach((f) => {
-  const option = document.createElement('option');
+  const option = document.createElement("option");
   option.value = f.id;
   option.textContent = f.label;
   fontSelect.appendChild(option);
@@ -97,9 +93,20 @@ async function renderBubble(bubble: BubbleAsset) {
   intrinsicWidth = imgEl.naturalWidth;
   intrinsicHeight = imgEl.naturalHeight;
   aspectRatio = intrinsicWidth / intrinsicHeight;
-
   bubbleWidthInput.value = String(intrinsicWidth);
   bubbleHeightInput.value = String(intrinsicHeight);
+
+  bubbleWidthRangeInput.min = String(
+    Math.max(20, Math.round(intrinsicWidth * 0.3))
+  );
+  bubbleWidthRangeInput.max = String(Math.round(intrinsicWidth * 3));
+  bubbleWidthRangeInput.value = String(intrinsicWidth);
+
+  bubbleHeightRangeInput.min = String(
+    Math.max(20, Math.round(intrinsicHeight * 0.3))
+  );
+  bubbleHeightRangeInput.max = String(Math.round(intrinsicHeight * 3));
+  bubbleHeightRangeInput.value = String(intrinsicHeight);
 
   outerGroup = new Konva.Group({
     x: STAGE_WIDTH / 2,
@@ -162,12 +169,13 @@ function updateTextPosition() {
   if (!textNode) return;
   const safeArea = currentBubble.safeArea;
 
-  // flip 상태에 따라 안전영역 좌표를 원본(0~intrinsicWidth/Height) 좌표계 기준으로 미러링
-  const effectiveX = flipX ? intrinsicWidth - safeArea.x - safeArea.width : safeArea.x;
-  const effectiveY = flipY ? intrinsicHeight - safeArea.y - safeArea.height : safeArea.y;
+  const effectiveX = flipX
+    ? intrinsicWidth - safeArea.x - safeArea.width
+    : safeArea.x;
+  const effectiveY = flipY
+    ? intrinsicHeight - safeArea.y - safeArea.height
+    : safeArea.y;
 
-  // outerGroup은 스테이지 중앙(STAGE_WIDTH/2, STAGE_HEIGHT/2)에 있고
-  // offsetX/Y가 intrinsicWidth/Height의 절반이므로, 스케일 적용 후 말풍선의 실제 좌상단 좌표는 아래와 같습니다.
   const bubbleLeft = STAGE_WIDTH / 2 - (intrinsicWidth / 2) * currentScaleX;
   const bubbleTop = STAGE_HEIGHT / 2 - (intrinsicHeight / 2) * currentScaleY;
 
@@ -185,16 +193,15 @@ function updateTextPosition() {
   textNode.moveToTop();
 }
 
-fontSelect.addEventListener('change', async () => {
+fontSelect.addEventListener("change", async () => {
   const selected = fonts.find((f) => f.id === fontSelect.value);
   if (!selected) return;
   currentFontFamily = selected.cssFontFamily;
 
-  // 폰트 파일이 아직 로드되지 않았다면 기다렸다가 반영 (안 그러면 폴백 폰트로 잠깐 보일 수 있음)
   try {
     await document.fonts.load(`16px "${currentFontFamily}"`);
   } catch (err) {
-    console.error('폰트 로드 실패:', err);
+    console.error("폰트 로드 실패:", err);
   }
 
   updateTextStyle();
@@ -205,31 +212,18 @@ function updateTextStyle() {
   textNode.text(textInput.value);
   textNode.fontSize(Number(fontSizeInput.value));
   textNode.fill(colorInput.value);
-  // textNode.letterSpacing(Number(letterSpacingInput.value));
   textNode.fontFamily(currentFontFamily);
-
-  const fontStyle =
-    [boldCheckbox.checked ? "bold" : "", italicCheckbox.checked ? "italic" : ""]
-      .filter(Boolean)
-      .join(" ") || "normal";
-  textNode.fontStyle(fontStyle);
   layer.batchDraw();
 }
 
-// ----- 이벤트 -----
 bubbleSelect.addEventListener("change", () => {
   const selected = bubbles.find((b) => b.id === bubbleSelect.value);
   if (selected) void renderBubble(selected);
 });
 
-[
-  textInput,
-  fontSizeInput,
-  colorInput,
-  // letterSpacingInput,
-  boldCheckbox,
-  italicCheckbox,
-].forEach((el) => el.addEventListener("input", updateTextStyle));
+[textInput, fontSizeInput, colorInput].forEach(
+  (el) => el.addEventListener("input", updateTextStyle)
+);
 
 flipHButton.addEventListener("click", () => {
   flipX = !flipX;
@@ -245,26 +239,46 @@ flipVButton.addEventListener("click", () => {
   layer.batchDraw();
 });
 
-// 말풍선 크기 조절 (비율 고정 옵션 포함)
-bubbleWidthInput.addEventListener("input", () => {
-  const newWidth = Number(bubbleWidthInput.value);
+function handleWidthChange(newWidth: number) {
   const newHeight = lockAspectCheckbox.checked
     ? newWidth / aspectRatio
     : Number(bubbleHeightInput.value);
-  if (lockAspectCheckbox.checked)
-    bubbleHeightInput.value = String(Math.round(newHeight));
-  applySize(newWidth, newHeight);
-});
 
-bubbleHeightInput.addEventListener("input", () => {
-  const newHeight = Number(bubbleHeightInput.value);
+  bubbleWidthInput.value = String(Math.round(newWidth));
+  bubbleWidthRangeInput.value = String(Math.round(newWidth));
+  if (lockAspectCheckbox.checked) {
+    bubbleHeightInput.value = String(Math.round(newHeight));
+    bubbleHeightRangeInput.value = String(Math.round(newHeight));
+  }
+  applySize(newWidth, newHeight);
+}
+
+function handleHeightChange(newHeight: number) {
   const newWidth = lockAspectCheckbox.checked
     ? newHeight * aspectRatio
     : Number(bubbleWidthInput.value);
-  if (lockAspectCheckbox.checked)
+
+  bubbleHeightInput.value = String(Math.round(newHeight));
+  bubbleHeightRangeInput.value = String(Math.round(newHeight));
+  if (lockAspectCheckbox.checked) {
     bubbleWidthInput.value = String(Math.round(newWidth));
+    bubbleWidthRangeInput.value = String(Math.round(newWidth));
+  }
   applySize(newWidth, newHeight);
-});
+}
+
+bubbleWidthInput.addEventListener("input", () =>
+  handleWidthChange(Number(bubbleWidthInput.value))
+);
+bubbleWidthRangeInput.addEventListener("input", () =>
+  handleWidthChange(Number(bubbleWidthRangeInput.value))
+);
+bubbleHeightInput.addEventListener("input", () =>
+  handleHeightChange(Number(bubbleHeightInput.value))
+);
+bubbleHeightRangeInput.addEventListener("input", () =>
+  handleHeightChange(Number(bubbleHeightRangeInput.value))
+);
 
 exportButton.addEventListener("click", () => {
   const dataUrl = stage.toDataURL({ mimeType: "image/png", pixelRatio: 1 });

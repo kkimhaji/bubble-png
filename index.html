@@ -12,7 +12,7 @@
           말풍선 모양
           <select id="bubble-select"></select>
         </label>
-        
+
         <label>
           폰트
           <select id="font-select"></select>
@@ -27,21 +27,25 @@
           ></textarea>
         </label>
 
-
         <label>
           말풍선 너비(px)
-          <input id="bubble-width" type="number" min="20" />
+          <div class="size-control">
+            <input id="bubble-width" type="number" min="20" />
+            <input id="bubble-width-range" type="range" min="20" />
+          </div>
         </label>
-
+        
         <label>
           말풍선 높이(px)
-          <input id="bubble-height" type="number" min="20" />
+          <div class="size-control">
+            <input id="bubble-height" type="number" min="20" />
+            <input id="bubble-height-range" type="range" min="20" />
+          </div>
         </label>
-
-        <label
-          ><input id="lock-aspect" type="checkbox" checked /> 가로세로 비율
-          고정</label
-        >
+        
+        <label class="checkbox-label">
+          <input id="lock-aspect" type="checkbox" checked /> 가로세로 비율 고정
+        </label>
 
         <label>
           폰트 크기
@@ -52,15 +56,6 @@
           글자 색상
           <input id="text-color" type="color" value="#000000" />
         </label>
-<!-- 
-        <label>
-          자간
-          <input id="letter-spacing" type="range" min="-5" max="20" value="0" />
-        </label> -->
-
-        <label><input id="bold" type="checkbox" /> 볼드</label>
-        <label><input id="italic" type="checkbox" /> 이탤릭</label>
-
         <div class="button-row">
           <button id="flip-h" type="button">좌우 반전</button>
           <button id="flip-v" type="button">상하 반전</button>

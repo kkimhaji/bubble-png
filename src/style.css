@@ -16,6 +16,7 @@ body {
   gap: 24px;
   padding: 24px;
   align-items: flex-start;
+  flex-wrap: wrap; /* 화면이 좁을 때 패널(260px)과 60vw 미리보기가 겹치지 않도록 */
 }
 
 .panel {
@@ -25,13 +26,6 @@ body {
   width: 260px;
 }
 
-.panel label {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  font-size: 14px;
-}
-
 .button-row {
   display: flex;
   gap: 8px;
@@ -39,9 +33,24 @@ body {
 
 /* 체크무늬 배경: 최종 export가 투명 PNG이므로, 편집 중에도 어디가 투명한지 눈으로 확인할 수 있게 처리 */
 #stage-container {
-  background: repeating-conic-gradient(#e0e0e0 0% 25%, #ffffff 0% 50%) 50% /
-    20px 20px;
+  width: 60vw;
+  aspect-ratio: 1 / 1; /* STAGE_WIDTH와 STAGE_HEIGHT가 같은 정사각형이므로 */
+  background: repeating-conic-gradient(#e0e0e0 0% 25%, #ffffff 0% 50%) 50% / 20px 20px;
   border: 1px solid #ccc;
+}
+
+.panel label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 14px;
+}
+
+/* 체크박스 계열 레이블은 가로 정렬로 예외 처리 */
+.panel label.checkbox-label {
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
 }
 
 .export-btn {
@@ -49,4 +58,19 @@ body {
   padding: 8px;
   font-weight: bold;
   cursor: pointer;
+}
+
+.size-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.size-control input[type='number'] {
+  width: 64px;
+  flex-shrink: 0;
+}
+
+.size-control input[type='range'] {
+  flex: 1;
 }
