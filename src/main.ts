@@ -48,6 +48,8 @@ let debugRect: Konva.Rect | null = null;
 let flipX = false;
 let flipY = false;
 let currentFontFamily = fonts[0].cssFontFamily;
+let currentScaleX = 1;
+let currentScaleY = 1;
 
 bubbles.forEach((b) => {
   const option = document.createElement("option");
@@ -131,7 +133,7 @@ async function renderBubble(bubble: BubbleAsset) {
       fill: "rgba(255,0,0,0.25)",
       listening: false,
     });
-    outerGroup.add(debugRect);
+    layer.add(debugRect);
   }
 
   textNode = new Konva.Text({
@@ -139,18 +141,20 @@ async function renderBubble(bubble: BubbleAsset) {
     verticalAlign: "middle",
     wrap: "word",
   });
-  outerGroup.add(textNode);
+  layer.add(textNode);
 
   applySize(intrinsicWidth, intrinsicHeight);
   updateTextPosition();
   updateTextStyle();
 }
 
-// 사용자가 지정한 표시 크기를 outerGroup의 scale로 반영
 function applySize(targetWidth: number, targetHeight: number) {
   if (!outerGroup || intrinsicWidth === 0 || intrinsicHeight === 0) return;
-  outerGroup.scaleX(targetWidth / intrinsicWidth);
-  outerGroup.scaleY(targetHeight / intrinsicHeight);
+  currentScaleX = targetWidth / intrinsicWidth;
+  currentScaleY = targetHeight / intrinsicHeight;
+  outerGroup.scaleX(currentScaleX);
+  outerGroup.scaleY(currentScaleY);
+  updateTextPosition(); // 말풍선 크기가 바뀔 때마다 텍스트 박스 위치·크기도 재계산
   layer.batchDraw();
 }
 
@@ -158,24 +162,25 @@ function updateTextPosition() {
   if (!textNode) return;
   const safeArea = currentBubble.safeArea;
 
-  // flip 상태에 따라 안전영역 좌표만 미러링 (원본 이미지 좌표계 기준, outerGroup 스케일에 의해 자동으로 같이 늘어남)
-  const effectiveX = flipX
-    ? intrinsicWidth - safeArea.x - safeArea.width
-    : safeArea.x;
-  const effectiveY = flipY
-    ? intrinsicHeight - safeArea.y - safeArea.height
-    : safeArea.y;
+  // flip 상태에 따라 안전영역 좌표를 원본(0~intrinsicWidth/Height) 좌표계 기준으로 미러링
+  const effectiveX = flipX ? intrinsicWidth - safeArea.x - safeArea.width : safeArea.x;
+  const effectiveY = flipY ? intrinsicHeight - safeArea.y - safeArea.height : safeArea.y;
 
-  textNode.x(effectiveX);
-  textNode.y(effectiveY);
-  textNode.width(safeArea.width);
-  textNode.height(safeArea.height);
+  // outerGroup은 스테이지 중앙(STAGE_WIDTH/2, STAGE_HEIGHT/2)에 있고
+  // offsetX/Y가 intrinsicWidth/Height의 절반이므로, 스케일 적용 후 말풍선의 실제 좌상단 좌표는 아래와 같습니다.
+  const bubbleLeft = STAGE_WIDTH / 2 - (intrinsicWidth / 2) * currentScaleX;
+  const bubbleTop = STAGE_HEIGHT / 2 - (intrinsicHeight / 2) * currentScaleY;
+
+  textNode.x(bubbleLeft + effectiveX * currentScaleX);
+  textNode.y(bubbleTop + effectiveY * currentScaleY);
+  textNode.width(safeArea.width * currentScaleX);
+  textNode.height(safeArea.height * currentScaleY);
 
   if (debugRect) {
-    debugRect.x(effectiveX);
-    debugRect.y(effectiveY);
-    debugRect.width(safeArea.width);
-    debugRect.height(safeArea.height);
+    debugRect.x(textNode.x());
+    debugRect.y(textNode.y());
+    debugRect.width(textNode.width());
+    debugRect.height(textNode.height());
   }
   textNode.moveToTop();
 }
