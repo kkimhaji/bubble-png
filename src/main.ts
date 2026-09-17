@@ -6,9 +6,11 @@ import { fonts } from "./fonts";
 const SHOW_SAFE_AREA_DEBUG = false;
 const STAGE_WIDTH = 500;
 const STAGE_HEIGHT = 500;
+let virtualWidth = STAGE_WIDTH;
+let virtualHeight = STAGE_HEIGHT;
 
-const bubbleSelect =
-  document.querySelector<HTMLSelectElement>("#bubble-select")!;
+const bubbleSelect = document.querySelector<HTMLSelectElement>("#bubble-select")!;
+const stageContainer = document.querySelector<HTMLDivElement>("#stage-container")!;
 const fontSelect = document.querySelector<HTMLSelectElement>("#font-select")!;
 const textInput = document.querySelector<HTMLTextAreaElement>("#text-input")!;
 const fontSizeInput = document.querySelector<HTMLInputElement>("#font-size")!;
@@ -73,7 +75,18 @@ function loadImage(src: string): Promise<HTMLImageElement> {
     img.src = src;
   });
 }
+function fitStageIntoContainer() {
+  stageContainer.style.aspectRatio = `${virtualWidth} / ${virtualHeight}`; // 추가
 
+  const containerWidth = stageContainer.clientWidth;
+  const scale = containerWidth / virtualWidth;
+  stage.width(virtualWidth * scale);
+  stage.height(virtualHeight * scale);
+  stage.scale({ x: scale, y: scale });
+  layer.batchDraw();
+}
+
+window.addEventListener('resize', fitStageIntoContainer);
 async function renderBubble(bubble: BubbleAsset) {
   currentBubble = bubble;
   outerGroup?.destroy();
@@ -159,25 +172,28 @@ function applySize(targetWidth: number, targetHeight: number) {
   if (!outerGroup || intrinsicWidth === 0 || intrinsicHeight === 0) return;
   currentScaleX = targetWidth / intrinsicWidth;
   currentScaleY = targetHeight / intrinsicHeight;
+
+  virtualWidth = targetWidth;
+  virtualHeight = targetHeight;
+
+  outerGroup.x(virtualWidth / 2);
+  outerGroup.y(virtualHeight / 2);
   outerGroup.scaleX(currentScaleX);
   outerGroup.scaleY(currentScaleY);
-  updateTextPosition(); // 말풍선 크기가 바뀔 때마다 텍스트 박스 위치·크기도 재계산
-  layer.batchDraw();
+
+  fitStageIntoContainer(); // 화면 표시 크기 재계산 (stage.width/height/scale 갱신 포함)
+  updateTextPosition();
 }
 
 function updateTextPosition() {
   if (!textNode) return;
   const safeArea = currentBubble.safeArea;
 
-  const effectiveX = flipX
-    ? intrinsicWidth - safeArea.x - safeArea.width
-    : safeArea.x;
-  const effectiveY = flipY
-    ? intrinsicHeight - safeArea.y - safeArea.height
-    : safeArea.y;
+  const effectiveX = flipX ? intrinsicWidth - safeArea.x - safeArea.width : safeArea.x;
+  const effectiveY = flipY ? intrinsicHeight - safeArea.y - safeArea.height : safeArea.y;
 
-  const bubbleLeft = STAGE_WIDTH / 2 - (intrinsicWidth / 2) * currentScaleX;
-  const bubbleTop = STAGE_HEIGHT / 2 - (intrinsicHeight / 2) * currentScaleY;
+  const bubbleLeft = virtualWidth / 2 - (intrinsicWidth / 2) * currentScaleX;
+  const bubbleTop = virtualHeight / 2 - (intrinsicHeight / 2) * currentScaleY;
 
   textNode.x(bubbleLeft + effectiveX * currentScaleX);
   textNode.y(bubbleTop + effectiveY * currentScaleY);
@@ -280,10 +296,11 @@ bubbleHeightRangeInput.addEventListener("input", () =>
   handleHeightChange(Number(bubbleHeightRangeInput.value))
 );
 
-exportButton.addEventListener("click", () => {
-  const dataUrl = stage.toDataURL({ mimeType: "image/png", pixelRatio: 1 });
-  const link = document.createElement("a");
-  link.download = "speech-bubble.png";
+exportButton.addEventListener('click', () => {
+  const exportPixelRatio = virtualWidth / stage.width();
+  const dataUrl = stage.toDataURL({ mimeType: 'image/png', pixelRatio: exportPixelRatio });
+  const link = document.createElement('a');
+  link.download = 'speech-bubble.png';
   link.href = dataUrl;
   link.click();
 });
