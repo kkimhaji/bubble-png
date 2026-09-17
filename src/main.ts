@@ -34,6 +34,9 @@ const stage = new Konva.Stage({
 const layer = new Konva.Layer();
 stage.add(layer);
 
+const textNode = new Konva.Text({ align: "center", verticalAlign: "middle", wrap: "word" });
+layer.add(textNode);
+
 let currentBubble: BubbleAsset = bubbles[0];
 let intrinsicWidth = 0;
 let intrinsicHeight = 0;
@@ -41,8 +44,13 @@ let aspectRatio = 1;
 
 let outerGroup: Konva.Group | null = null;
 let flipGroup: Konva.Group | null = null;
-let textNode: Konva.Text | null = null;
+
 let debugRect: Konva.Rect | null = null;
+
+if (SHOW_SAFE_AREA_DEBUG) {
+  debugRect = new Konva.Rect({ fill: "rgba(255,0,0,0.25)", listening: false });
+  layer.add(debugRect);
+}
 let flipX = false;
 let flipY = false;
 let currentFontFamily = fonts[0].cssFontFamily;
@@ -148,21 +156,6 @@ async function renderBubble(bubble: BubbleAsset) {
   );
   outerGroup.add(flipGroup);
 
-  if (SHOW_SAFE_AREA_DEBUG) {
-    debugRect = new Konva.Rect({
-      fill: "rgba(255,0,0,0.25)",
-      listening: false,
-    });
-    layer.add(debugRect);
-  }
-
-  textNode = new Konva.Text({
-    align: "center",
-    verticalAlign: "middle",
-    wrap: "word",
-  });
-  layer.add(textNode);
-
   applySize(intrinsicWidth, intrinsicHeight);
   updateTextPosition();
   updateTextStyle();
@@ -186,7 +179,6 @@ function applySize(targetWidth: number, targetHeight: number) {
 }
 
 function updateTextPosition() {
-  if (!textNode) return;
   const safeArea = currentBubble.safeArea;
 
   const effectiveX = flipX ? intrinsicWidth - safeArea.x - safeArea.width : safeArea.x;
@@ -224,7 +216,6 @@ fontSelect.addEventListener("change", async () => {
 });
 
 function updateTextStyle() {
-  if (!textNode) return;
   textNode.text(textInput.value);
   textNode.fontSize(Number(fontSizeInput.value));
   textNode.fill(colorInput.value);
