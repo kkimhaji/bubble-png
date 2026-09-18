@@ -68,7 +68,13 @@
 
       <div id="stage-container"></div>
     </div>
-
+    <div id="export-modal" class="export-modal" hidden>
+      <div class="export-modal-inner">
+        <p>이미지를 꾹 눌러서 '사진에 저장' 또는 '이미지 복사'를 선택하세요.</p>
+        <img id="export-result-img" alt="말풍선 결과 이미지" />
+        <button id="export-modal-close" type="button">닫기</button>
+      </div>
+    </div>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

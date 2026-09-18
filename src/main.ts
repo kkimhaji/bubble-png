@@ -8,6 +8,9 @@ const STAGE_WIDTH = 500;
 const STAGE_HEIGHT = 500;
 let virtualWidth = STAGE_WIDTH;
 let virtualHeight = STAGE_HEIGHT;
+const exportModal = document.querySelector<HTMLDivElement>("#export-modal")!;
+const exportResultImg = document.querySelector<HTMLImageElement>("#export-result-img")!;
+const exportModalClose = document.querySelector<HTMLButtonElement>("#export-modal-close")!;
 
 const bubbleSelect = document.querySelector<HTMLSelectElement>("#bubble-select")!;
 const stageContainer = document.querySelector<HTMLDivElement>("#stage-container")!;
@@ -290,10 +293,25 @@ bubbleHeightRangeInput.addEventListener("input", () =>
 exportButton.addEventListener('click', () => {
   const exportPixelRatio = virtualWidth / stage.width();
   const dataUrl = stage.toDataURL({ mimeType: 'image/png', pixelRatio: exportPixelRatio });
-  const link = document.createElement('a');
-  link.download = 'speech-bubble.png';
-  link.href = dataUrl;
-  link.click();
+
+  exportResultImg.src = dataUrl;
+  exportModal.hidden = false;
+
+  stage
+    .toBlob({ mimeType: 'image/png', pixelRatio: exportPixelRatio })
+    .then((blob) => {
+      if (!blob) return;
+      const blobUrl = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.download = 'speech-bubble.png';
+      link.href = blobUrl;
+      link.click();
+      URL.revokeObjectURL(blobUrl);
+    });
+});
+
+exportModalClose.addEventListener('click', () => {
+  exportModal.hidden = true;
 });
 
 void renderBubble(currentBubble);
