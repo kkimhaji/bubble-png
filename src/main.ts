@@ -12,6 +12,9 @@ const exportModal = document.querySelector<HTMLDivElement>("#export-modal")!;
 const exportResultImg = document.querySelector<HTMLImageElement>("#export-result-img")!;
 const exportModalClose = document.querySelector<HTMLButtonElement>("#export-modal-close")!;
 
+const letterSpacingInput = document.querySelector<HTMLInputElement>("#letter-spacing")!;
+const boldCheckbox = document.querySelector<HTMLInputElement>("#bold")!;
+const italicCheckbox = document.querySelector<HTMLInputElement>("#italic")!;
 const bubbleSelect = document.querySelector<HTMLSelectElement>("#bubble-select")!;
 const stageContainer = document.querySelector<HTMLDivElement>("#stage-container")!;
 const fontSelect = document.querySelector<HTMLSelectElement>("#font-select")!;
@@ -223,6 +226,14 @@ function updateTextStyle() {
   textNode.fontSize(Number(fontSizeInput.value));
   textNode.fill(colorInput.value);
   textNode.fontFamily(currentFontFamily);
+  textNode.letterSpacing(Number(letterSpacingInput.value));
+
+  const fontStyle =
+    [boldCheckbox.checked ? "bold" : "", italicCheckbox.checked ? "italic" : ""]
+      .filter(Boolean)
+      .join(" ") || "normal";
+  textNode.fontStyle(fontStyle);
+
   layer.batchDraw();
 }
 
@@ -231,7 +242,7 @@ bubbleSelect.addEventListener("change", () => {
   if (selected) void renderBubble(selected);
 });
 
-[textInput, fontSizeInput, colorInput].forEach(
+[textInput, fontSizeInput, colorInput, letterSpacingInput, boldCheckbox, italicCheckbox].forEach(
   (el) => el.addEventListener("input", updateTextStyle)
 );
 
